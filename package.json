@@ -1,0 +1,32 @@
+{
+    "name": "geopolitical-analyzer",
+    "version": "1.0.0",
+    "description": "Redaktorski agent ds. geopolityki - analiza bieżących wydarzeń z użyciem BFS",
+    "main": "bfs-search.ts",
+    "scripts": {
+        "start": "npx ts-node bfs-search.ts",
+        "test": "npx ts-node test-flow.ts",
+        "demo": "npx ts-node test-flow.ts",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+        "ts-node": "^10.9.0",
+        "axios": "^1.6.0",
+        "openai": "^4.0.0",
+        "dotenv": "^16.0.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.0.0"
+    },
+    "keywords": [
+        "geopolitics",
+        "graph-analysis",
+        "bfs",
+        "international-relations",
+        "network-analysis"
+    ],
+    "author": "Geopolitical Analysis Team",
+    "license": "MIT"
+}

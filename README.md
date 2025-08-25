@@ -1,201 +1,92 @@
-# Intelligent Network Search Workflow
+# BFS Search - Finding Monika
 
-> **Note:** This code has been anonymized for demonstration purposes. It serves as an example of implementation patterns and algorithms. The actual API endpoints, authentication keys, and business logic have been generalized and are not functional.
+## Description
 
-## Overview
+Code implements breadth-first search (BFS) algorithm to find Monika Kowalczyk's location based on connections between people and places.
 
-This code implements an search workflow that utilizes the **Breadth-First Search (BFS)** algorithm to explore networks of relationships between entities and locations. The workflow systematically traverses a connection graph to find a specific target.
+### Search process:
 
-## Solution Architecture
+1. **Data loading** - code reads context from `data.txt` file
+2. **Initialization** - starts search from Gdansk and Poznan
+3. **BFS traversal**:
+   - For each city finds people in that city
+   - For each person finds places associated with them
+   - Tests each new place as potential Monika's location
+4. **Result verification** - code checks if found location is OLSZTYN (correct answer)
 
-### Core Components
-
-1. **KnowledgeBase** - Data management and caching system
-2. **BFS Algorithm** - Efficient breadth-first search implementation
-3. **API Client** - Interface for external API communication
-4. **AI Integration** - Artificial intelligence support for decision-making processes
-
-### Data Structure
-
-```typescript
-interface KnowledgeBase {
-    entityLocations: Map<string, string[]>;    // entity → locations
-    locationEntities: Map<string, string[]>;   // location → entities  
-    visitedLocations: Set<string>;             // visited locations
-    visitedEntities: Set<string>;              // visited entities
-    testedTargets: Set<string>;                // tested targets
-    failedQueries: Set<string>;                // failed queries
-}
-```
-
-## BFS Algorithm - Detailed Description
-
-### Concept
-
-Breadth-First Search (BFS) is a graph traversal algorithm that explores nodes level by level, ensuring the shortest path to the target is found.
-
-### Implementation
+### Data structure:
 
 ```typescript
-async function searchAgent(): Promise<string> {
-    const queue: QueueNode[] = [];
-    let queueIndex = 0;  // O(1) queue traversal using index
-    
-    // Initialization - add starting nodes
-    for (const location of INITIAL_NODES) {
-        queue.push({ type: "location", value: location });
-        knowledgeBase.visitedLocations.add(location);
+SIMULATED_DATA = {
+    people: {
+        'MONIKA': ['GDANSK'],
+        'PAWEL': ['GDANSK', 'POZNAN'],
+        'MARCIN': ['POZNAN'],
+        'TOMASZ': ['SZCZECIN', 'POZNAN', 'WROCLAW'],
+        'ECHO': ['GDANSK', 'POZNAN', 'WARSZAWA', 'WROCLAW', 'OLSZTYN'],
+        'GHOST': ['SZCZECIN', 'WROCLAW', 'OLSZTYN']
+    },
+    places: {
+        'GDANSK': ['MONIKA', 'PAWEL', 'ECHO'],
+        'POZNAN': ['PAWEL', 'MARCIN', 'TOMASZ', 'ECHO'],
+        'SZCZECIN': ['TOMASZ', 'GHOST'],
+        'WARSZAWA': ['ECHO'],
+        'WROCLAW': ['TOMASZ', 'ECHO', 'GHOST'],
+        'OLSZTYN': ['ECHO', 'GHOST']
     }
-    
-    // Main BFS loop
-    while (queueIndex < queue.length) {
-        const current = queue[queueIndex++];
-        
-        if (current.type === "location") {
-            await processLocationNode(current, queue);
-        } else {
-            const result = await processEntityNode(current, queue);
-            if (result) return result;  // Target found!
-        }
-    }
-    
-    return "No target found";
 }
 ```
 
-### Performance Characteristics
+### Helper functions:
 
-**Implementation features:**
-- `queue[index++]` → **O(1)** for dequeue operations
-- `Set.has()` → **O(1)** for membership lookups
-- **Result:** Optimal O(V+E) time complexity for BFS
+- `getData()` - simulates API responses based on local data
+- `askModel()` - uses OpenAI to analyze context and suggest next steps
+- `testLocation()` - checks if given location is OLSZTYN
+- `getText()` - loads case context from data.txt file
 
-### Algorithm Step by Step
+## Running the code
 
-1. **Initialization:** Add starting nodes to the queue
-2. **Iteration:** Get the next node from the queue
-3. **Exploration:** 
-   - If location → find associated entities
-   - If entity → find associated locations
-4. **Testing:** Check if new location is the target
-5. **Expansion:** Add new nodes to the queue
-6. **Repeat:** Continue until target found or queue exhausted
+### Requirements:
+- Node.js
+- TypeScript
+- OpenAI API key in environment variable `OPENAI_API_KEY`
 
-## Function Descriptions
-
-### `getData(endpoint, query)`
-**Purpose:** API communication to fetch related data
-
-**Features:**
-- Failure cache (`failedQueries`) - prevents repeating failed queries
-- Robust error handling with error classification
-- Automatic retry prevention
-
-```typescript
-// Check failure cache - O(1)
-if (knowledgeBase.failedQueries.has(query)) {
-    return null;
-}
-```
-
-### `searchAgent()`
-**Purpose:** Main BFS algorithm for network traversal
-
-**Key aspects:**
-- **Queue management:** Uses index-based traversal for O(1) performance
-- **Duplicate prevention:** Set-based tracking of visited nodes
-- **Early termination:** Returns result immediately upon finding target
-
-### `testTarget(location)`
-**Purpose:** Validates whether a given location is the sought target
-
-**Features:**
-- Test deduplication (avoids testing the same place twice)
-- API validation with proper error handling
-- Success detection with pattern matching
-
-### `shouldTestTarget(target)`
-**Purpose:** Helper function deciding whether a given place should be tested
-
-**Logic:**
-- Checks if not already tested
-- Excludes starting nodes (known not to be targets)
-- O(1) performance through Set lookups
-
-## Implementation Benefits
-
-### Performance
-- **O(V+E) time complexity** - optimal for BFS
-- **O(V+E) space complexity** - minimal memory usage
-- **Cache mechanisms** - avoids redundant operations
-
-### Reliability  
-- **Error resilience** - graceful handling of API failures
-- **Duplicate prevention** - avoids cycles and redundancy
-- **State management** - comprehensive tracking of all operations
-
-### Maintainability
-- **Type safety** - complete TypeScript typing
-- **Modular design** - clear separation of concerns
-- **Testable code** - all functions exported for testing
-
-## Use Cases
-
-This pattern can be adapted for:
-- **Social network analysis** - finding connections between users
-- **Supply chain tracking** - tracing products through supply chains  
-- **Cybersecurity** - analyzing threat propagation in networks
-- **Knowledge graphs** - exploring relationships in knowledge bases
-- **Recommendation systems** - finding similarities and connections
-
-## System Requirements
-
-- **Node.js** 16+
-- **TypeScript** 4.5+
-- **Dependencies:** axios, openai, dotenv
-- **API Access** - required access keys for external APIs
-
-## Configuration
+### Installation and execution:
 
 ```bash
-# Environment variables
-API_BASE_URL=https://your-api.com
-API_KEY=your-api-key
-OPENAI_API_KEY=your-openai-key
-NOTES_URL=https://your-api.com/notes
+# Install dependencies
+npm install
+
+# Run the code
+npx ts-node bfs-search.ts
 ```
 
-## Usage Example
-
-```typescript
-import { searchAgent, knowledgeBase } from './task-13-anonymised';
-
-// Run search
-const result = await searchAgent();
-console.log('Found target:', result);
-
-// Check collected data
-console.log('Visited locations:', knowledgeBase.visitedLocations.size);
-console.log('Discovered entities:', knowledgeBase.visitedEntities.size);
+### File structure:
+```
+bfs-search/
+├── bfs-search.ts    # main code
+├── data.txt         # Monika's case context
+├── package.json     # dependencies
+└── README.md        # this file
 ```
 
-## Technical Highlights
+## Expected result
 
-### Algorithm Efficiency
-The implementation uses an efficient BFS approach with:
-- Index-based queue traversal for O(1) dequeue operations
-- Set-based membership testing for O(1) lookups
-- Smart caching to prevent redundant API calls
-- Early termination on target discovery
+Code should find OLSZTYN location and display success message:
 
-### Error Handling Strategy
-- Graceful degradation on API failures
-- Comprehensive error classification
-- Automatic retry prevention for known failures
-- State preservation across error conditions
+```
+SUCCESS! Correct location found: OLSZTYN
+SUKCES! Znaleziono poprawną lokalizację!
+```
 
-### Architecture Benefits
-- Modular, testable design
-- Type-safe TypeScript implementation
-- Clean separation between data layer and algorithm logic
-- Extensible pattern for various graph traversal problems 
+## BFS Algorithm
+
+1. Queue starts with cities: Gdansk, Poznan
+2. For each city in queue:
+   - Gets list of people in that city
+   - Adds people to queue if not yet visited
+3. For each person in queue:
+   - Gets list of places associated with that person
+   - Tests each place as potential Monika's location
+   - Adds new cities to queue
+4. Ends when finds OLSZTYN or searches all possibilities 
